@@ -1,95 +1,86 @@
-# 🍌 ComfyUI — Nano Banana 2 Nodes
+# 🍌 ComfyUI — Nano Banana 2 Nodes (Vertex AI)
 
 Nœuds ComfyUI pour générer et éditer des images via **Nano Banana 2**  
-(Google Gemini 3.1 Flash Image Preview — `gemini-3.1-flash-image-preview`).
+via **Google Vertex AI** (`gemini-2.5-flash-image`).
 
 ---
 
 ## Installation
 
-1. Copie le dossier `ComfyUI_NanaBanana2` dans :
-   ```
-   ComfyUI/custom_nodes/ComfyUI_NanaBanana2/
-   ```
-2. Redémarre ComfyUI.
-3. Aucune dépendance pip externe requise (utilise `urllib` + `Pillow` + `torch` déjà présents dans ComfyUI).
+```bash
+cd ComfyUI/custom_nodes
+git clone https://github.com/TON_USERNAME/ComfyUI_NanaBanana2.git
+```
+Redémarre ComfyUI. Aucune dépendance pip requise.
 
 ---
 
-## Clé API
+## Auth — Bearer Token
 
-Obtiens ta clé sur [Google AI Studio](https://aistudio.google.com/apikey).
+Obtiens un token avec gcloud CLI :
 
-**2 façons de la fournir :**
+```bash
+gcloud auth login
+gcloud auth print-access-token
+```
 
-- **Variable d'environnement (recommandé) :**
-  ```bash
-  export GEMINI_API_KEY="ta_clé"
-  ```
-- **Directement dans le nœud :** remplis le champ `api_key` (attention, la clé sera visible dans ton workflow JSON).
+**3 façons de le fournir (par priorité) :**
 
-> ⚠️ Nano Banana 2 nécessite une clé API **payante** (pas de free tier pour ce modèle).
+1. Champ `access_token` directement dans le noeud
+2. Variable d'env :
+   ```bash
+   export GOOGLE_CLOUD_ACCESS_TOKEN=$(gcloud auth print-access-token)
+   ```
+3. gcloud installé → le noeud l'appelle automatiquement
+
+> ⚠️ Le token expire après **1 heure**. Régénère-le avec `gcloud auth print-access-token`.
+
+---
+
+## Configuration requise
+
+| Paramètre | Valeur |
+|---|---|
+| `project_id` | Ton GCP Project ID (ex: `t-pointer-473318-n7`) |
+| `location` | `global` ← **obligatoire** pour ce modèle |
+| `model` | `gemini-2.5-flash-image` |
 
 ---
 
 ## Nœuds disponibles
 
 ### 🍌 NB2 Text → Image
-Génère une image à partir d'un prompt texte.
+Génère une image depuis un prompt texte.
 
 | Paramètre | Description |
 |---|---|
-| `prompt` | Description de l'image souhaitée |
-| `negative_prompt` | Ce à éviter (optionnel) |
-| `aspect_ratio` | 1:1 / 16:9 / 9:16 / 3:4 / 4:3 / 21:9 / 4:1 / 1:8... (14 ratios) |
-| `resolution` | 512 / 1024 / 2048 / 4096 |
+| `prompt` | Description de l'image |
+| `negative_prompt` | Ce à éviter |
+| `aspect_ratio` | 1:1 / 16:9 / 9:16 / 3:4 / 4:3 / 21:9... |
 | `seed` | -1 = aléatoire |
-| `use_search_grounding` | Permet au modèle de chercher sur Google pour plus de précision |
+| `use_search_grounding` | Le modèle cherche sur Google pour plus de précision |
 
 ---
 
 ### 🍌 NB2 Image Edit (keep/change)
-Édite une image existante. Format de prompt recommandé (natif NB2) :
+Édite une image existante. Format de prompt recommandé :
 
 ```
 Keep the character and lighting / change the background to a neon cyberpunk street
 ```
-
-| Paramètre | Description |
-|---|---|
-| `image` | Image source (tensor ComfyUI) |
-| `prompt` | Instruction d'édition |
-| `aspect_ratio` | Ratio de sortie |
-| `resolution` | Résolution de sortie |
 
 ---
 
 ### 🍌 NB2 Multi-Image Blend
 Fusionne jusqu'à 4 images de référence + un prompt.
 
-| Paramètre | Description |
-|---|---|
-| `image_1..4` | Images de référence (image_1 obligatoire) |
-| `prompt` | Instructions de fusion |
-
 ---
 
-## Prix (API officielle Google — mars 2026)
+## Installer gcloud sur Lightning AI
 
-| Résolution | Prix/image |
-|---|---|
-| 512 px (0.5K) | ~$0.019 |
-| 1024 px (1K) | ~$0.067 |
-| 2048 px (2K) | ~$0.099 |
-| 4096 px (4K) | ~$0.151 |
-
-Search grounding : gratuit pour les 5 000 premières requêtes/mois, puis $0.014/requête.
-
----
-
-## Notes
-
-- **1 image par requête** : c'est une limitation de l'API Gemini `generateContent` (pas de paramètre `n`).
-- Toutes les images générées contiennent un watermark **SynthID** invisible.
-- Timeout par défaut : 300 secondes (les générations 4K peuvent être lentes).
-- Compatible avec l'**API APIYI** (proxy compatible Gemini, ~$0.03/req) — change simplement la base URL dans `nodes.py` si tu veux l'utiliser.
+```bash
+curl https://sdk.cloud.google.com | bash
+exec -l $SHELL
+gcloud init
+gcloud auth login --no-launch-browser
+```
