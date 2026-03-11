@@ -1,7 +1,7 @@
 # 🍌 ComfyUI — Nano Banana 2 Nodes (Vertex AI)
 
 Nœuds ComfyUI pour générer et éditer des images via **Nano Banana 2**  
-via **Google Vertex AI** (`gemini-2.5-flash-image`).
+via **Google Vertex AI** (`gemini-3.1-flash-image`).
 
 ---
 
@@ -41,9 +41,9 @@ gcloud auth print-access-token
 
 | Paramètre | Valeur |
 |---|---|
-| `project_id` | Ton GCP Project ID (ex: `t-pointer-473318-n7`) |
+| `project_id` | Ton GCP Project ID |
 | `location` | `global` ← **obligatoire** pour ce modèle |
-| `model` | `gemini-2.5-flash-image` |
+| `model` | `gemini-3.1-flash-image` |
 
 ---
 
